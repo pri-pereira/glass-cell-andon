@@ -241,20 +241,24 @@ const Logistica = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className={`relative w-full rounded-3xl shadow-lg overflow-hidden flex flex-col ${chamado.isWaiting ? "opacity-75 grayscale-[30%]" : ""
-                      } ${chamado.isCritical && !chamado.isWaiting ? "animate-pulse ring-4 ring-red-500 ring-offset-2" : ""} ${getCardColorClasses(chamado.cor_peca)}`}
+                    className={`relative w-full rounded-3xl shadow-lg border-2 overflow-hidden flex flex-col ${chamado.isWaiting ? "opacity-75 grayscale-[30%]" : ""
+                      } ${chamado.isCritical && !chamado.isWaiting ? "animate-pulse ring-4 ring-red-500 ring-offset-2 border-red-500" : "border-transparent"} ${chamado.cor_peca?.startsWith('#') ? "border-l-8 border-l-gray-300" : getCardColorClasses(chamado.cor_peca)}`}
+                    style={chamado.cor_peca?.startsWith('#') ? { backgroundColor: chamado.cor_peca, color: "#ffffff" } : {}}
                   >
                     {/* Main Content Area */}
                     <div className="flex-1 p-2 flex flex-col gap-2 relative z-10 font-bold">
 
                       {/* Flex Header & Actions */}
                       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-2 w-full border-b border-black/10 pb-3 md:pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`${chamado.cor_peca?.startsWith('#') ? "bg-white/20" : "bg-black/10"} text-xs md:text-base font-black px-2 py-1 rounded-md`}>
                             TACTO: {chamado.tacto}
                           </span>
-                          <span className="text-xs md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
+                          <span className={`${chamado.cor_peca?.startsWith('#') ? "bg-white/20" : "bg-black/10"} text-xs md:text-base font-black px-2 py-1 rounded-md`}>
                             LADO: {chamado.lado}
+                          </span>
+                          <span className={`${chamado.cor_peca?.startsWith('#') ? "bg-white/20" : "bg-black/10"} text-[10px] md:text-xs font-bold px-2 py-1 rounded-md opacity-70`}>
+                            Cor DB: {chamado.cor_peca || "N/A"}
                           </span>
                         </div>
 
@@ -278,7 +282,7 @@ const Logistica = () => {
                               CONFIRMAR
                             </Button>
                           ) : (
-                            <div className="h-10 md:h-8 px-4 w-full md:w-auto ml-2 rounded-lg flex items-center justify-center text-xs md:text-[10px] font-black border-2 border-black text-black">
+                            <div className={`h-10 md:h-8 px-4 w-full md:w-auto ml-2 rounded-lg flex items-center justify-center text-xs md:text-[10px] font-black border-2 ${chamado.cor_peca?.startsWith('#') ? "border-white text-white" : "border-black text-black"}`}>
                               <Package className="mr-2 md:mr-1 h-3 w-3 md:h-3 md:w-3" />
                               AGUARDANDO
                             </div>
@@ -288,7 +292,7 @@ const Logistica = () => {
 
                       {/* Flex Body: Part Code & Name */}
                       <div className="flex flex-col items-center justify-center py-1 w-full flex-1">
-                        <div className="text-xl md:text-2xl font-black tracking-widest mb-1 px-3 py-1 bg-white/40 rounded-lg">
+                        <div className="text-xl md:text-2xl font-black tracking-widest mb-1 px-3 py-1 bg-white/40 rounded-lg text-[#001E50]">
                           {chamado.codigo_peca}
                         </div>
                         <h3 className="text-lg md:text-xl font-black text-center mt-0.5 leading-none">
@@ -299,10 +303,10 @@ const Logistica = () => {
                       {/* Footer: Operador / Time */}
                       <div className="flex flex-col md:flex-row items-center justify-between w-full mt-1 pt-2 border-t border-black/10 gap-2">
                         <div className="flex flex-col md:flex-row gap-2">
-                          <span className="text-xs uppercase font-black bg-black/10 px-2 py-1 rounded-md mb-2 md:mb-0">
+                          <span className={`${chamado.cor_peca?.startsWith('#') ? "bg-white/20" : "bg-black/10"} text-xs uppercase font-black px-2 py-1 rounded-md mb-2 md:mb-0`}>
                             CÓD: {chamado.codigo_peca}
                           </span>
-                          <span className="text-xs uppercase font-black bg-black/10 px-2 py-1 rounded-md mb-2 md:mb-0">
+                          <span className={`${chamado.cor_peca?.startsWith('#') ? "bg-white/20" : "bg-black/10"} text-xs uppercase font-black px-2 py-1 rounded-md mb-2 md:mb-0`}>
                             CC: {chamado.cost_center || "N/A"}
                           </span>
                         </div>
@@ -330,8 +334,8 @@ const Logistica = () => {
             </AnimatePresence>
           )}
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 };
 
