@@ -21,7 +21,7 @@ const Index = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-2xl md:text-4xl font-bold text-[#001E50] text-center tracking-tight"
+          className="text-xl md:text-3xl lg:text-4xl font-bold text-[#001E50] text-center tracking-tight"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
           SmartAndon Volkswagen Taubaté
@@ -40,12 +40,12 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3 }}
             onClick={() => navigate("/operador")}
-            className="group flex flex-col items-center justify-center gap-6 p-10 bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 transition-shadow w-full aspect-square md:aspect-auto md:h-80"
+            className="group flex flex-col items-center justify-center gap-4 md:gap-6 p-6 md:p-10 bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 transition-shadow w-full aspect-[4/3] sm:aspect-square md:aspect-auto md:h-80"
           >
-            <div className="p-6 bg-slate-50 rounded-full group-hover:bg-[#001E50]/5 transition-colors">
-              <HardHat className="h-20 w-20 text-[#001E50]" />
+            <div className="p-4 md:p-6 bg-slate-50 rounded-full group-hover:bg-[#001E50]/5 transition-colors">
+              <HardHat className="h-16 w-16 md:h-20 md:w-20 text-[#001E50]" />
             </div>
-            <span className="text-2xl font-bold text-[#001E50] tracking-wide">OPERADOR</span>
+            <span className="text-xl md:text-2xl font-bold text-[#001E50] tracking-wide">OPERADOR</span>
           </motion.button>
 
           {/* Logistics Card */}
@@ -56,12 +56,12 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.4 }}
             onClick={() => navigate("/login-logistica")}
-            className="group flex flex-col items-center justify-center gap-6 p-10 bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 transition-shadow w-full aspect-square md:aspect-auto md:h-80"
+            className="group flex flex-col items-center justify-center gap-4 md:gap-6 p-6 md:p-10 bg-white rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 transition-shadow w-full aspect-[4/3] sm:aspect-square md:aspect-auto md:h-80"
           >
-            <div className="p-6 bg-slate-50 rounded-full group-hover:bg-[#001E50]/5 transition-colors">
-              <Truck className="h-20 w-20 text-[#001E50]" />
+            <div className="p-4 md:p-6 bg-slate-50 rounded-full group-hover:bg-[#001E50]/5 transition-colors">
+              <Truck className="h-16 w-16 md:h-20 md:w-20 text-[#001E50]" />
             </div>
-            <span className="text-2xl font-bold text-[#001E50] tracking-wide">LOGÍSTICA</span>
+            <span className="text-xl md:text-2xl font-bold text-[#001E50] tracking-wide">LOGÍSTICA</span>
           </motion.button>
         </div>
 

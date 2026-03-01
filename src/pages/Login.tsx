@@ -55,8 +55,8 @@ const Login = () => {
       <Header />
       <main className="flex-1 flex items-center justify-center p-6">
         <form onSubmit={handleLogin} className="w-full max-w-sm space-y-6">
-          <h1 className="text-2xl font-bold text-primary text-center">
-            Acesso Administrativo
+          <h1 className="text-xl md:text-2xl font-bold text-primary text-center">
+            Acesso Restrito
           </h1>
           <p className="text-center text-muted-foreground">
             Relatórios exclusivos para administradores
@@ -79,7 +79,7 @@ const Login = () => {
               required
             />
           </div>
-          <Button type="submit" className="w-full h-14 text-lg" disabled={loading}>
+          <Button type="submit" className="w-full h-12 md:h-14 text-base md:text-lg" disabled={loading}>
             {loading ? "Entrando..." : "ENTRAR"}
           </Button>
         </form>

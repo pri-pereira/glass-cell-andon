@@ -158,11 +158,11 @@ const Relatorios = () => {
       <Header />
 
       {/* 3. Floating Glassmorphism Calendar Widget */}
-      <div className="fixed top-24 right-4 z-50">
+      <div className="fixed top-20 right-4 md:top-24 md:right-4 z-50">
         <div className="relative">
           <Button
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="rounded-full h-14 w-14 shadow-2xl bg-white/40 backdrop-blur-xl border border-white/60 text-[#001E50] hover:bg-white/60 hover:scale-105 transition-all"
+            className="rounded-full h-12 w-12 md:h-14 md:w-14 shadow-2xl bg-white/40 backdrop-blur-xl border border-white/60 text-[#001E50] hover:bg-white/60 hover:scale-105 transition-all"
             variant="ghost"
           >
             <Calendar className="h-6 w-6" />
@@ -201,11 +201,11 @@ const Relatorios = () => {
 
         {/* Header Block */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
-          <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black text-[#001E50] tracking-tight">Inteligência de Dados</h1>
-            <p className="text-lg text-gray-400 font-medium">Performance Operacional • {format(parseISO(selectedDate), "dd/MM/yyyy")}</p>
+          <div className="space-y-2 mt-4 md:mt-0">
+            <h1 className="text-3xl md:text-5xl font-black text-[#001E50] tracking-tight">Inteligência de Dados</h1>
+            <p className="text-base md:text-lg text-gray-400 font-medium">Performance Operacional • {format(parseISO(selectedDate), "dd/MM/yyyy")}</p>
           </div>
-          <Button variant="outline" onClick={handleLogout} className="rounded-2xl border-gray-200 text-gray-500 hover:text-[#001E50] hover:border-[#001E50] font-bold px-6">
+          <Button variant="outline" onClick={handleLogout} className="rounded-2xl border-gray-200 text-gray-500 hover:text-[#001E50] hover:border-[#001E50] font-bold px-4 md:px-6 w-full md:w-auto">
             <LogOut className="h-5 w-5 mr-2" /> Encerrar Sessão
           </Button>
         </div>
@@ -221,7 +221,7 @@ const Relatorios = () => {
               <h2 className="text-gray-500 font-bold tracking-widest text-sm uppercase">Tempo de Reação</h2>
             </div>
             <div className="flex items-end gap-3">
-              <span className="text-5xl font-black text-[#001E50] tracking-tighter">{formatSeconds(avgReaction)}</span>
+              <span className="text-4xl md:text-5xl font-black text-[#001E50] tracking-tighter">{formatSeconds(avgReaction)}</span>
             </div>
             <p className="text-xs text-gray-400 mt-2 font-medium">Solicitação → Sinalização Logística</p>
           </motion.div>
@@ -235,7 +235,7 @@ const Relatorios = () => {
               <h2 className="text-gray-500 font-bold tracking-widest text-sm uppercase">Tempo de Fechamento</h2>
             </div>
             <div className="flex items-end gap-3">
-              <span className="text-5xl font-black text-[#001E50] tracking-tighter">{formatSeconds(avgClose)}</span>
+              <span className="text-4xl md:text-5xl font-black text-[#001E50] tracking-tighter">{formatSeconds(avgClose)}</span>
             </div>
             <p className="text-xs text-gray-400 mt-2 font-medium">Sinalização → Confirmação Operador</p>
           </motion.div>
@@ -250,7 +250,7 @@ const Relatorios = () => {
               <h2 className="text-blue-200 font-bold tracking-widest text-sm uppercase">Total Lead Time</h2>
             </div>
             <div className="flex items-end gap-3 relative z-10">
-              <span className="text-5xl font-black tracking-tighter">{formatSeconds(avgLeadTime)}</span>
+              <span className="text-4xl md:text-5xl font-black tracking-tighter">{formatSeconds(avgLeadTime)}</span>
             </div>
             <p className="text-xs text-blue-200 mt-2 font-medium relative z-10">Ciclo Completo do Chamado</p>
           </motion.div>

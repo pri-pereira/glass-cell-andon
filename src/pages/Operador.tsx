@@ -183,7 +183,7 @@ const Operador = () => {
               <div className="flex bg-slate-100 rounded-3xl p-1.5 w-full mx-auto shadow-sm">
                 <button
                   onClick={() => setLado("LE")}
-                  className={`flex-1 py-4 text-lg font-bold rounded-3xl transition-all duration-200 ${lado === "LE"
+                  className={`flex-1 py-3 md:py-4 text-base md:text-lg font-bold rounded-3xl transition-all duration-200 ${lado === "LE"
                     ? "bg-[#001E50] text-white shadow-md transform scale-[1.02]"
                     : "text-gray-500 hover:text-[#001E50]"
                     }`}
@@ -192,7 +192,7 @@ const Operador = () => {
                 </button>
                 <button
                   onClick={() => setLado("LD")}
-                  className={`flex-1 py-4 text-lg font-bold rounded-3xl transition-all duration-200 ${lado === "LD"
+                  className={`flex-1 py-3 md:py-4 text-base md:text-lg font-bold rounded-3xl transition-all duration-200 ${lado === "LD"
                     ? "bg-[#001E50] text-white shadow-md transform scale-[1.02]"
                     : "text-gray-500 hover:text-[#001E50]"
                     }`}
@@ -211,7 +211,7 @@ const Operador = () => {
               </div>
             </div>
 
-            <div className="w-full max-w-lg transform scale-110 md:scale-125 origin-top mt-4 mb-16 md:mb-24">
+            <div className="w-full max-w-lg transform scale-100 md:scale-125 origin-top mt-4 mb-4 md:mb-24">
               <NumericKeypad value={tacto} onChange={setTacto} maxLength={5} />
             </div>
 
@@ -261,7 +261,7 @@ const Operador = () => {
             </p>
 
             {/* Bento Grid layout for Parts */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 w-full">
               {catalogoPecas.map((peca) => (
                 <div
                   key={peca.id}
@@ -269,16 +269,16 @@ const Operador = () => {
                 >
                   <button
                     onClick={() => handleSubmitChamado(peca)}
-                    className="w-full h-full min-h-[160px] flex flex-col items-center justify-center p-6 rounded-3xl border border-white/20 shadow-lg relative overflow-hidden transition-all hover:brightness-105"
+                    className="w-full h-full min-h-[120px] md:min-h-[160px] flex flex-col items-center justify-center p-3 md:p-6 rounded-2xl md:rounded-3xl border border-white/20 shadow-lg relative overflow-hidden transition-all hover:brightness-105"
                     style={{
                       backgroundColor: peca.cor,
                       color: getTextColor(peca.cor)
                     }}
                   >
-                    <span className="text-3xl font-extrabold mb-2 z-10 drop-shadow-sm">
+                    <span className="text-2xl md:text-3xl font-extrabold mb-1 md:mb-2 z-10 drop-shadow-sm">
                       {peca.part_number}
                     </span>
-                    <span className="text-lg font-medium text-center z-10 leading-tight">
+                    <span className="text-sm md:text-lg font-medium text-center z-10 leading-tight line-clamp-2 md:line-clamp-none">
                       {peca.description}
                     </span>
                     <span className="text-xs font-bold opacity-70 mt-6 z-10">
@@ -324,7 +324,7 @@ const Operador = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full max-w-md bg-[#001E50] rounded-[2rem] p-8 flex flex-col items-center justify-center text-white shadow-2xl relative overflow-hidden"
+              className="w-full max-w-md bg-[#001E50] rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center text-white shadow-2xl relative overflow-hidden"
             >
               {/* Glossy light effect softly bleeding from the top */}
               <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
@@ -337,7 +337,7 @@ const Operador = () => {
 
               <Button
                 onClick={handleConfirmDelivery}
-                className="w-full h-20 text-xl font-bold rounded-[1.5rem] bg-white text-[#001E50] hover:bg-gray-100 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-all text-wrap z-10"
+                className="w-full h-16 md:h-20 text-lg md:text-xl font-bold rounded-[1.5rem] bg-white text-[#001E50] hover:bg-gray-100 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-all text-wrap z-10"
               >
                 CONFIRMAR RECEBIMENTO
               </Button>

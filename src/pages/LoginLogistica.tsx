@@ -73,7 +73,7 @@ const LoginLogistica = () => {
             <Header />
             <main className="flex-1 flex items-center justify-center p-6">
                 <form onSubmit={handleAuth} className="w-full max-w-sm space-y-6">
-                    <h1 className="text-2xl font-bold text-primary text-center">
+                    <h1 className="text-xl md:text-2xl font-bold text-primary text-center">
                         {mode === "login" && "Acesso Logística"}
                         {mode === "register" && "Criar Conta"}
                         {mode === "forgot_password" && "Recuperar Senha"}
@@ -89,7 +89,7 @@ const LoginLogistica = () => {
                             placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="h-14 text-lg border-2 border-primary"
+                            className="h-12 md:h-14 text-base md:text-lg border-2 border-primary"
                             required
                         />
                         {mode !== "forgot_password" && (
@@ -98,12 +98,12 @@ const LoginLogistica = () => {
                                 placeholder="Senha"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="h-14 text-lg border-2 border-primary"
+                                className="h-12 md:h-14 text-base md:text-lg border-2 border-primary"
                                 required
                             />
                         )}
                     </div>
-                    <Button type="submit" className="w-full h-14 text-lg" disabled={loading}>
+                    <Button type="submit" className="w-full h-12 md:h-14 text-base md:text-lg" disabled={loading}>
                         {loading ? "Aguarde..." :
                             mode === "login" ? "ENTRAR" :
                                 mode === "register" ? "CADASTRAR" : "ENVIAR EMAIL"}

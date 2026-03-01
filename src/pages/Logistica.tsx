@@ -190,33 +190,33 @@ const Logistica = () => {
         {/* Superior Dashboard Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-6">
           <div className="flex justify-between w-full md:w-auto items-start md:items-end gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-[#001E50] tracking-tight">Rastreamento de Peças</h1>
-              <p className="text-gray-500 mt-1">SLA Operacional: 10 Minutos</p>
+            <div className="w-full">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#001E50] tracking-tight">Rastreamento de Peças</h1>
+              <p className="text-sm md:text-base text-gray-500 mt-1">SLA Operacional: 10 Minutos</p>
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-4 min-w-[140px]">
-              <div className="bg-orange-100 p-3 rounded-xl text-orange-600">
-                <AlertTriangle size={24} />
+          <div className="flex flex-wrap md:flex-nowrap w-full md:w-auto gap-3 md:gap-4">
+            <div className="flex-1 bg-white rounded-2xl p-3 md:p-4 shadow-sm border flex items-center gap-3 md:gap-4 min-w-[130px]">
+              <div className="bg-orange-100 p-2 md:p-3 rounded-xl text-orange-600">
+                <AlertTriangle className="h-5 w-5 md:h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-500">Pendentes</p>
-                <p className="text-3xl font-extrabold text-[#001E50]">{pendentes}</p>
+                <p className="text-xs md:text-sm font-bold text-gray-500">Pendentes</p>
+                <p className="text-2xl md:text-3xl font-extrabold text-[#001E50]">{pendentes}</p>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-4 min-w-[140px]">
-              <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
-                <Clock size={24} />
+            <div className="flex-1 bg-white rounded-2xl p-3 md:p-4 shadow-sm border flex items-center gap-3 md:gap-4 min-w-[130px]">
+              <div className="bg-blue-100 p-2 md:p-3 rounded-xl text-blue-600">
+                <Clock className="h-5 w-5 md:h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-500">Na Célula</p>
-                <p className="text-3xl font-extrabold text-[#001E50]">{aguardando}</p>
+                <p className="text-xs md:text-sm font-bold text-gray-500">Na Célula</p>
+                <p className="text-2xl md:text-3xl font-extrabold text-[#001E50]">{aguardando}</p>
               </div>
             </div>
-            <Button variant="outline" size="icon" onClick={handleLogout} className="h-full rounded-2xl px-4 py-4 md:py-0 border-gray-200 text-gray-500 hover:text-[#001E50] hover:border-[#001E50] transition-colors ml-4 shadow-sm">
-              <LogOut className="h-6 w-6" />
+            <Button variant="outline" size="icon" onClick={handleLogout} className="h-auto shrink-0 rounded-2xl px-4 py-4 md:py-0 border-gray-200 text-gray-500 hover:text-[#001E50] hover:border-[#001E50] transition-colors md:ml-4 shadow-sm">
+              <LogOut className="h-5 w-5 md:h-6 w-6" />
             </Button>
           </div>
         </div>
@@ -248,18 +248,18 @@ const Logistica = () => {
                     <div className="flex-1 p-2 flex flex-col gap-2 relative z-10 font-bold">
 
                       {/* Flex Header & Actions */}
-                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 w-full border-b border-black/10 pb-2">
+                      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-2 w-full border-b border-black/10 pb-3 md:pb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
+                          <span className="text-xs md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
                             TACTO: {chamado.tacto}
                           </span>
-                          <span className="text-sm md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
+                          <span className="text-xs md:text-base font-black bg-black/10 px-2 py-1 rounded-md">
                             LADO: {chamado.lado}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-                          <div className="flex flex-col items-end">
+                        <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto mt-1 md:mt-0">
+                          <div className="flex flex-col flex-1 md:flex-initial md:items-end">
                             <span className="text-[10px] uppercase tracking-widest opacity-80 mb-0">
                               {chamado.isWaiting ? "Sinalizado" : "Tempo"}
                             </span>
@@ -272,14 +272,14 @@ const Logistica = () => {
                           {!chamado.isWaiting ? (
                             <Button
                               size="sm"
-                              className="h-8 px-4 rounded-lg text-xs font-black shadow-md transition-transform hover:scale-105 active:scale-95 ml-2 bg-black text-white hover:bg-black/80"
+                              className="h-10 md:h-8 px-4 w-full md:w-auto ml-2 md:max-w-xs rounded-lg text-sm md:text-xs font-black shadow-md transition-transform hover:scale-105 active:scale-95 bg-black text-white hover:bg-black/80"
                               onClick={() => handleRegisterDelivery(chamado.id, chamado.cor_peca)}
                             >
                               CONFIRMAR
                             </Button>
                           ) : (
-                            <div className="h-8 px-3 rounded-lg flex items-center justify-center text-[10px] font-black border-2 border-black text-black ml-2">
-                              <Package className="mr-1 h-3 w-3" />
+                            <div className="h-10 md:h-8 px-4 w-full md:w-auto ml-2 rounded-lg flex items-center justify-center text-xs md:text-[10px] font-black border-2 border-black text-black">
+                              <Package className="mr-2 md:mr-1 h-3 w-3 md:h-3 md:w-3" />
                               AGUARDANDO
                             </div>
                           )}
