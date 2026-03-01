@@ -31,12 +31,12 @@ const Header = () => {
       <Button
         variant="ghost"
         onClick={() => navigate("/")}
-        className="text-primary-foreground hover:bg-primary/80 h-14 w-14 rounded-2xl"
+        className="text-primary-foreground hover:bg-primary/80 h-16 w-16 rounded-2xl"
       >
-        <Home className="h-8 w-8" />
+        <Home className="h-10 w-10" />
       </Button>
       <button onClick={() => navigate("/")} className="flex items-center gap-3">
-        <img src="/vw-logo.svg" alt="VW Logo" className="h-8 w-8" />
+        <img src="/vw-logo.svg" alt="VW Logo" className="h-10 w-10" />
         <span className="text-xl font-bold text-primary-foreground tracking-wide hidden sm:inline">
           SMARTANDON
         </span>
