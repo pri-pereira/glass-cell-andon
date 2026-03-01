@@ -38,7 +38,7 @@ const Header = () => {
       <button onClick={() => navigate("/")} className="flex items-center gap-3">
         <Factory className="h-8 w-8 text-primary-foreground" />
         <span className="text-xl font-bold text-primary-foreground tracking-wide hidden sm:inline">
-          SMART ANDON
+          SMARTANDON VW
         </span>
       </button>
 
