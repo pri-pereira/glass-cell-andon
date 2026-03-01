@@ -35,9 +35,9 @@ const Header = () => {
       >
         <Home className="h-10 w-10" />
       </Button>
-      <button onClick={() => navigate("/")} className="flex items-center gap-3">
-        <img src="/vw-logo.svg" alt="VW Logo" className="h-10 w-10" />
-        <span className="text-xl font-bold text-primary-foreground tracking-wide hidden sm:inline">
+      <button onClick={() => navigate("/")} className="flex items-center gap-2">
+        <img src="/vw-logo.svg" alt="VW Logo" className="h-9 w-9 flex-shrink-0" />
+        <span className="text-lg md:text-xl font-bold text-primary-foreground tracking-wide">
           SMARTANDON
         </span>
       </button>
