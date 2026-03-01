@@ -314,23 +314,23 @@ const Operador = () => {
             </p>
 
             {/* Bento Grid layout for Parts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full px-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-2">
               {catalogoPecas.map((peca) => (
                 <div
                   key={peca.id}
-                  className="w-full"
+                  className="w-full flex"
                 >
                   <button
                     onClick={() => handleSubmitChamado(peca)}
-                    className={`w-full h-full min-h-[180px] md:min-h-[220px] flex flex-col items-center justify-center p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden transition-all hover:brightness-105 active:scale-95 ${getCardColorClasses(peca.Cor)}`}
+                    className={`w-full h-auto min-h-[160px] md:min-h-[200px] flex flex-col items-center justify-center py-6 px-4 md:py-8 md:px-6 rounded-2xl md:rounded-3xl shadow-lg relative transition-all hover:brightness-105 active:scale-95 gap-2 md:gap-3 ${getCardColorClasses(peca.Cor)}`}
                   >
-                    <span className="text-3xl md:text-5xl font-extrabold mb-2 md:mb-4 z-10 drop-shadow-sm tracking-tight text-center">
+                    <span className="text-2xl md:text-4xl font-extrabold z-10 drop-shadow-sm tracking-tight text-center break-words w-full">
                       {peca.Codigo_Peca}
                     </span>
-                    <span className="text-xl md:text-3xl font-black text-center z-10 leading-tight line-clamp-2 md:line-clamp-none opacity-90">
+                    <span className="text-lg md:text-2xl font-black text-center z-10 leading-snug w-full px-2">
                       {peca.Nome_Peca}
                     </span>
-                    <span className="text-base md:text-lg font-bold mt-6 md:mt-8 z-10 opacity-70 uppercase tracking-widest">
+                    <span className="text-sm md:text-base font-bold mt-2 md:mt-4 z-10 opacity-70 uppercase tracking-widest w-full text-center">
                       CC: {peca.CC_Number}
                     </span>
                   </button>
