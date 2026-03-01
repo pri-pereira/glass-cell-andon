@@ -7,6 +7,7 @@ import NumericKeypad from "@/components/NumericKeypad";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCardColorClasses } from "@/utils/colorMap";
+import { getTerminalId } from "@/utils/terminalId";
 
 type Step = "tacto" | "peca" | "success";
 type Lado = "LE" | "LD" | null;
@@ -97,7 +98,9 @@ const Operador = () => {
         },
         (payload) => {
           const record = payload.new as any;
-          if (record.status === "entregue") {
+          // ── Terminal ID guard: only show overlay on the device that made the request ──
+          const myTerminalId = getTerminalId();
+          if (record.status === "entregue" && record.terminal_id === myTerminalId) {
             setPendingDelivery({
               id: record.id,
               nome_peca: record.nome_peca,
@@ -152,9 +155,10 @@ const Operador = () => {
       nome_peca: peca.Nome_Peca,
       cost_center: peca.CC_Number,
       cor_peca: peca.Cor,
-      rack_location: "N/A", // Valor Padrão para evitar erros de db
+      rack_location: "N/A",
       barcode_value: peca.Codigo_Peca,
       created_at: getSaoPauloTimestamp(),
+      terminal_id: getTerminalId(), // links this chamado to this specific device
     });
 
     if (error) {
