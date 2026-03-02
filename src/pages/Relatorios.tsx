@@ -61,10 +61,12 @@ const Relatorios = () => {
     const fetchRange = async () => {
       const { data } = await supabase
         .from("chamados")
-        .select("*")
+        // ── Apenas as colunas usadas pelos KPIs e gráficos ──
+        .select("id, tacto, created_at, entregue_at, confirmado_at, status")
         .gte("created_at", `${dateFrom}T00:00:00`)
         .lte("created_at", `${dateTo}T23:59:59`)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(500); // segurança: máx 500 registros por consulta
       if (data) setChamados(data as Chamado[]);
     };
     fetchRange();

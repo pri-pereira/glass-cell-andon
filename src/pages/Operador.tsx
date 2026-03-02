@@ -7,7 +7,8 @@ import NumericKeypad from "@/components/NumericKeypad";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCardColorClasses } from "@/utils/colorMap";
-import { getTerminalId } from "@/utils/terminalId";
+import { getTerminalId, saveActiveChamadoId } from "@/utils/terminalId";
+import ConfirmacaoFAB from "@/components/ConfirmacaoFAB";
 
 type Step = "tacto" | "peca" | "success";
 type Lado = "LE" | "LD" | null;
@@ -31,7 +32,6 @@ const Operador = () => {
   const [tacto, setTacto] = useState("");
   const [lado, setLado] = useState<Lado>(null);
   const [catalogoPecas, setCatalogoPecas] = useState<PecaItem[]>([]);
-  const [pendingDelivery, setPendingDelivery] = useState<PendingDelivery | null>(null);
   const [tactoError, setTactoError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
@@ -84,37 +84,7 @@ const Operador = () => {
     return () => clearTimeout(timeoutId);
   }, [tacto, lado]);
 
-  // Realtime listener for logistics double-check deliveries
-  useEffect(() => {
-    const channel = supabase
-      .channel("operador-delivery")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "chamados",
-          filter: "status=eq.entregue",
-        },
-        (payload) => {
-          const record = payload.new as any;
-          // ── Terminal ID guard: only show overlay on the device that made the request ──
-          const myTerminalId = getTerminalId();
-          if (record.status === "entregue" && record.terminal_id === myTerminalId) {
-            setPendingDelivery({
-              id: record.id,
-              nome_peca: record.nome_peca,
-              codigo_peca: record.codigo_peca,
-            });
-          }
-        }
-      )
-      .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const handleConfirmTacto = () => {
     // Only proceed if there's no error, tacto is filled, lado is selected, and we found parts
@@ -148,7 +118,7 @@ const Operador = () => {
   };
 
   const handleSubmitChamado = async (peca: PecaItem) => {
-    const { error } = await supabase.from("chamados").insert({
+    const { data: inserted, error } = await supabase.from("chamados").insert({
       tacto,
       lado,
       codigo_peca: peca.Codigo_Peca,
@@ -158,12 +128,17 @@ const Operador = () => {
       rack_location: "N/A",
       barcode_value: peca.Codigo_Peca,
       created_at: getSaoPauloTimestamp(),
-      terminal_id: getTerminalId(), // links this chamado to this specific device
-    });
+      terminal_id: getTerminalId(),
+    }).select("id").single();
 
     if (error) {
       toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
       return;
+    }
+
+    // ── Salva o ID no localStorage para recuperar no reload ──
+    if (inserted?.id) {
+      saveActiveChamadoId(inserted.id);
     }
 
     setStep("success");
@@ -361,43 +336,8 @@ const Operador = () => {
         )}
       </main>
 
-      {/* High-Performance Action Overlay for Delivery Confirmation */}
-      <AnimatePresence>
-        {pendingDelivery && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            /* Brutal backdrop blur for 100% focus */
-            className="fixed inset-0 z-50 flex items-end justify-center bg-transparent backdrop-blur-2xl px-4 pb-4"
-          >
-            <motion.div
-              /* Slide up animation */
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="w-full max-w-md bg-[#001E50] rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center text-white shadow-2xl relative overflow-hidden"
-            >
-              {/* Glossy light effect softly bleeding from the top */}
-              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-
-              <h2 className="text-3xl font-bold mb-4 text-center mt-4">Peça na Célula!</h2>
-              <p className="text-xl mb-12 text-center text-white/80 leading-relaxed font-light z-10">
-                A logística sinalizou a entrega da <br />
-                <strong className="text-white font-bold text-3xl mt-2 block">{pendingDelivery.nome_peca}</strong>
-              </p>
-
-              <Button
-                onClick={handleConfirmDelivery}
-                className="w-full h-16 md:h-20 text-lg md:text-xl font-bold rounded-[1.5rem] bg-white text-[#001E50] hover:bg-gray-100 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-95 transition-all text-wrap z-10"
-              >
-                CONFIRMAR RECEBIMENTO
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ── Double Check FAB: aparece quando a logística sinaliza entrega ── */}
+      <ConfirmacaoFAB />
     </div>
   );
 };

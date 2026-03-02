@@ -4,11 +4,7 @@ import { Package, CheckCircle2, AlertTriangle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRealtimeOrders, RealtimeOrder } from "@/hooks/useRealtimeOrders";
-
-interface ConfirmacaoFABProps {
-    tacto: string;
-    lado: string | null;
-}
+import { clearActiveChamadoId } from "@/utils/terminalId";
 
 const getSaoPauloTimestamp = () => {
     try {
@@ -23,8 +19,8 @@ const getSaoPauloTimestamp = () => {
     }
 };
 
-const ConfirmacaoFAB = ({ tacto, lado }: ConfirmacaoFABProps) => {
-    const { pendingOrders } = useRealtimeOrders(tacto, lado);
+const ConfirmacaoFAB = () => {
+    const { pendingOrders } = useRealtimeOrders();
     const [modalOpen, setModalOpen] = useState(false);
     const [selected, setSelected] = useState<RealtimeOrder | null>(null);
     const [loading, setLoading] = useState(false);
@@ -52,7 +48,8 @@ const ConfirmacaoFAB = ({ tacto, lado }: ConfirmacaoFABProps) => {
         if (error) {
             toast({ title: "Erro ao confirmar", description: error.message, variant: "destructive" });
         } else {
-            toast({ title: "✅ Recebimento confirmado!", description: `Peça ${selected.nome_peca} recebida com sucesso.` });
+            clearActiveChamadoId(); // libera o chamado do localStorage
+            toast({ title: "✅ Recebimento confirmado!", description: `Peça ${selected.nome_peca} recebida.` });
             setModalOpen(false);
             setSelected(null);
         }
@@ -70,6 +67,7 @@ const ConfirmacaoFAB = ({ tacto, lado }: ConfirmacaoFABProps) => {
         if (error) {
             toast({ title: "Erro", description: error.message, variant: "destructive" });
         } else {
+            clearActiveChamadoId(); // libera o chamado do localStorage
             toast({
                 title: "⚠️ Divergência registrada!",
                 description: "A logística foi notificada. Aguarde o atendimento.",
@@ -111,7 +109,7 @@ const ConfirmacaoFAB = ({ tacto, lado }: ConfirmacaoFABProps) => {
                             📦 Confirmar Recebimento
                         </span>
                         <span className="block text-base font-black">
-                            Tacto {first.tacto} · {first.lado}
+                            {first.tacto ? `Tacto ${first.tacto} · ${first.lado}` : "Ver pedido"}
                         </span>
                     </div>
                 </motion.button>

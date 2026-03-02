@@ -3,17 +3,38 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
+// ── Carregamento imediato (páginas leves / fluxo crítico) ──────────────────
 import Index from "./pages/Index";
 import Operador from "./pages/Operador";
 import Logistica from "./pages/Logistica";
 import Login from "./pages/Login";
 import LoginLogistica from "./pages/LoginLogistica";
-import Relatorios from "./pages/Relatorios";
-import PartsCatalog from "./pages/PartsCatalog";
-import Ajuda from "./pages/Ajuda";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// ── Lazy loading (páginas pesadas, acessadas apenas por admins) ─────────────
+// Só são carregadas quando o usuário navega até elas, reduzindo o bundle inicial.
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const PartsCatalog = lazy(() => import("./pages/PartsCatalog"));
+const Ajuda = lazy(() => import("./pages/Ajuda"));
+
+// Fallback simples enquanto o chunk é baixado
+const PageLoader = () => (
+  <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="w-12 h-12 border-4 border-[#001E50] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Evita re-fetch desnecessário ao re-focar a janela
+      refetchOnWindowFocus: false,
+      staleTime: 30_000, // 30 segundos de cache padrão
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -22,14 +43,30 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Páginas críticas — carregadas imediatamente */}
           <Route path="/" element={<Index />} />
           <Route path="/operador" element={<Operador />} />
           <Route path="/logistica" element={<Logistica />} />
           <Route path="/login" element={<Login />} />
           <Route path="/login-logistica" element={<LoginLogistica />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/admin/pecas" element={<PartsCatalog />} />
-          <Route path="/ajuda" element={<Ajuda />} />
+
+          {/* Páginas pesadas — carregadas sob demanda */}
+          <Route path="/relatorios" element={
+            <Suspense fallback={<PageLoader />}>
+              <Relatorios />
+            </Suspense>
+          } />
+          <Route path="/admin/pecas" element={
+            <Suspense fallback={<PageLoader />}>
+              <PartsCatalog />
+            </Suspense>
+          } />
+          <Route path="/ajuda" element={
+            <Suspense fallback={<PageLoader />}>
+              <Ajuda />
+            </Suspense>
+          } />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

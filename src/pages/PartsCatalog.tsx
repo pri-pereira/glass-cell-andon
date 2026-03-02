@@ -33,6 +33,8 @@ const PartsCatalog = () => {
     const [parts, setParts] = useState<Part[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [page, setPage] = useState(0); // paginação: página atual (0-indexed)
+    const PAGE_SIZE = 50;
 
     // Modal state
     const [modalOpen, setModalOpen] = useState(false);
@@ -72,7 +74,8 @@ const PartsCatalog = () => {
         setLoading(true);
         const { data, error } = await supabase
             .from("base_pecas_andon")
-            .select("*")
+            // ── Apenas colunas necessárias para a tabela de administração ──
+            .select("id, Tacto, Lado, Codigo_Peca, Nome_Peca, CC_Number, Cor")
             .order("Tacto", { ascending: true });
 
         if (error) {
@@ -127,12 +130,20 @@ const PartsCatalog = () => {
         setDeleting(false);
     };
 
-    // Filtered list
+    // Filtro + paginação
     const filtered = parts.filter(p =>
         (p.Nome_Peca || "").toLowerCase().includes(search.toLowerCase()) ||
         (p.Codigo_Peca || "").toLowerCase().includes(search.toLowerCase()) ||
         (p.Tacto || "").includes(search)
     );
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+    // Reset para página 0 quando a busca muda
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        setPage(0);
+    };
 
     const COR_BADGE: Record<string, string> = {
         azul: "bg-blue-100 text-blue-700 border-blue-300",
@@ -171,7 +182,7 @@ const PartsCatalog = () => {
                         </button>
                         <div>
                             <h1 className="text-2xl md:text-4xl font-black text-[#001E50] tracking-tight">Admin · Peças</h1>
-                            <p className="text-sm text-gray-400 font-medium">{parts.length} peça{parts.length !== 1 ? "s" : ""} cadastrada{parts.length !== 1 ? "s" : ""}</p>
+                            <p className="text-sm text-gray-400 font-medium">{parts.length} peça{parts.length !== 1 ? "s" : ""} · {filtered.length} visíve{filtered.length !== 1 ? "is" : "l"}</p>
                         </div>
                     </div>
 
@@ -180,7 +191,7 @@ const PartsCatalog = () => {
                             type="text"
                             placeholder="Buscar por nome, código ou tacto..."
                             value={search}
-                            onChange={e => setSearch(e.target.value)}
+                            onChange={e => handleSearch(e.target.value)}
                             className="flex-1 md:w-64 h-10 rounded-xl border border-gray-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#001E50] bg-white"
                         />
                         <button onClick={fetchParts} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-500 transition-colors" title="Atualizar">
@@ -216,7 +227,7 @@ const PartsCatalog = () => {
                                             </td>
                                         </tr>
                                     ) : (
-                                        filtered.map((part, i) => (
+                                        paginated.map((part, i) => (
                                             <motion.tr
                                                 key={part.id}
                                                 initial={{ opacity: 0 }}
@@ -265,6 +276,32 @@ const PartsCatalog = () => {
                         </table>
                     </div>
                 </div>
+
+                {/* ── Paginação ── */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4 px-2">
+                        <span className="text-sm text-gray-400 font-medium">
+                            Pág. {page + 1} de {totalPages} &middot; {filtered.length} peças
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="h-9 px-4 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                            >
+                                ← Anterior
+                            </button>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={page >= totalPages - 1}
+                                className="h-9 px-4 rounded-xl bg-[#001E50] text-white text-sm font-bold hover:bg-[#00287a] disabled:opacity-40 transition-colors"
+                            >
+                                Próxima →
+                            </button>
+                        </div>
+                    </div>
+                )}
+
             </main>
 
             {/* ── ADD / EDIT MODAL ── */}

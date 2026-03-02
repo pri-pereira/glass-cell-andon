@@ -36,3 +36,31 @@ export const getTerminalId = (): string => {
         return generateUUID();
     }
 };
+
+// ── Persistência do chamado ativo ──────────────────────────────────────────
+// Salva o ID do chamado em andamento para que, após reload, o FAB reapar eça.
+
+const ACTIVE_CHAMADO_KEY = "smartandon_active_chamado_id";
+
+/** Salva o ID do chamado recém-aberto no localStorage. */
+export const saveActiveChamadoId = (id: string): void => {
+    try {
+        localStorage.setItem(ACTIVE_CHAMADO_KEY, id);
+    } catch { /* silently ignore */ }
+};
+
+/** Retorna o ID do chamado ativo salvo, ou null se não houver. */
+export const getActiveChamadoId = (): string | null => {
+    try {
+        return localStorage.getItem(ACTIVE_CHAMADO_KEY);
+    } catch {
+        return null;
+    }
+};
+
+/** Remove o chamado ativo do localStorage (quando for concluído/divergência). */
+export const clearActiveChamadoId = (): void => {
+    try {
+        localStorage.removeItem(ACTIVE_CHAMADO_KEY);
+    } catch { /* silently ignore */ }
+};
