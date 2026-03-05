@@ -321,8 +321,8 @@ const Logistica = () => {
           </div>
         </div>
 
-        {/* Notificação Push Prompt Row */}
-        {!notificationsEnabled && (
+        {/* Notificação Push Prompt Row - Desabilitado temporariamente */}
+        {/* !notificationsEnabled && (
           <div className="w-full bg-blue-50 border border-blue-100 p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 -mt-2">
             <div className="flex items-center gap-3">
               <div className="bg-blue-100 p-2 rounded-full"><Package className="h-5 w-5 text-blue-600" /></div>
@@ -335,7 +335,7 @@ const Logistica = () => {
               Ativar Alertas
             </Button>
           </div>
-        )}
+        )*/}
 
         {/* Priority Vertical List */}
         <div className="flex-1 w-full flex flex-col gap-4 mt-2 mb-12">
