@@ -1,7 +1,7 @@
 {
-  "name": "Smart Andon",
-  "short_name": "Andon",
-  "description": "Sistema Smart Andon - Célula de Vidros",
+  "name": "Smart Andon VW",
+  "short_name": "Andon VW",
+  "description": "Sistema Smart Andon - Volkswagen Taubaté",
   "theme_color": "#001E50",
   "background_color": "#FFFFFF",
   "display": "standalone",
@@ -10,14 +10,15 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/pwa-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/favicon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/pwa-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
