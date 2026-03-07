@@ -81,7 +81,7 @@ const Index = () => {
           className="mt-12 w-full flex flex-col items-center"
         >
           <button
-            onClick={() => navigate("/login-logistica")}
+            onClick={() => navigate("/login")}
             className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-[#001E50] transition-colors px-4 py-2"
           >
             <Lock className="w-4 h-4" />
