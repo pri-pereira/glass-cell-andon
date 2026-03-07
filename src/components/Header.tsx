@@ -1,4 +1,4 @@
-import { Home, Database, Package } from "lucide-react";
+import { Home, Database, BarChart2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -46,11 +46,11 @@ const Header = () => {
       {isAdmin ? (
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => navigate("/logistica")}
+            onClick={() => navigate("/relatorios")}
             className="bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm rounded-xl px-4 h-12 flex items-center gap-2 transition-all active:scale-95"
           >
-            <Package className="h-4 w-4 md:h-5 md:w-5" />
-            <span className="text-sm md:text-base font-bold hidden md:inline">Logística</span>
+            <BarChart2 className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="text-sm md:text-base font-bold hidden md:inline">System Analytics</span>
           </Button>
           <Button
             onClick={() => navigate("/admin/pecas")}
