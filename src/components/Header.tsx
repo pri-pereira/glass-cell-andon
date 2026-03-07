@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Header = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -21,6 +22,11 @@ const Header = () => {
         const hasAdminRole = roles && roles.length > 0;
         const hasMetadataAdmin = user.user_metadata?.role === "admin";
         setIsAdmin(hasAdminRole || hasMetadataAdmin);
+
+        // Captura o primeiro nome do usuário
+        const fullName: string = user.user_metadata?.full_name || user.email || "";
+        const firstName = fullName.trim().split(" ")[0];
+        setUserName(firstName);
       }
     };
     checkAdmin();
@@ -35,11 +41,15 @@ const Header = () => {
       >
         <Home className="h-10 w-10" />
       </Button>
-      <button onClick={() => navigate("/")} className="flex items-center gap-2">
-        <img src="/vw-logo.svg" alt="VW Logo" className="h-9 w-9 flex-shrink-0" />
-        <span className="text-lg md:text-xl font-bold text-primary-foreground tracking-wide">
+      <button onClick={() => navigate("/")} className="flex items-center gap-2 flex-col leading-none">
+        <span className="text-lg md:text-xl font-bold text-primary-foreground tracking-wide leading-tight">
           SMARTANDON
         </span>
+        {userName ? (
+          <span className="text-[11px] text-white/70 font-medium tracking-wide leading-none">
+            Bem vindo! {userName}
+          </span>
+        ) : null}
       </button>
 
       {/* Renders Admin Button if user is admin, else empty div for flex spacing */}

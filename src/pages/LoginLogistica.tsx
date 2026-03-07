@@ -11,6 +11,7 @@ type AuthMode = "login" | "register" | "forgot_password";
 const LoginLogistica = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [fullName, setFullName] = useState("");
     const [mode, setMode] = useState<AuthMode>("login");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -45,7 +46,11 @@ const LoginLogistica = () => {
                 navigate("/logistica");
             }
         } else if (mode === "register") {
-            const { error } = await supabase.auth.signUp({ email, password });
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { full_name: fullName.trim() } },
+            });
             if (error) {
                 toast({ title: "Erro ao criar conta", description: error.message, variant: "destructive" });
             } else {
@@ -83,6 +88,17 @@ const LoginLogistica = () => {
                         {mode === "forgot_password" && "Insira seu email para recuperar a senha"}
                     </p>
                     <div className="space-y-4">
+                        {mode === "register" && (
+                            <Input
+                                type="text"
+                                placeholder="Nome Completo"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                className="h-12 md:h-14 text-base md:text-lg border-2 border-primary"
+                                required
+                                autoComplete="name"
+                            />
+                        )}
                         <Input
                             type="email"
                             placeholder="Email"
