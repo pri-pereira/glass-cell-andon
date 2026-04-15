@@ -341,34 +341,43 @@ const Logistica = () => {
               motivoCounts[nc.motivo] = (motivoCounts[nc.motivo] || 0) + 1;
             }
           });
-          const reincidentes = Object.entries(motivoCounts).filter(([, count]) => count >= 3);
-          if (reincidentes.length === 0) return null;
+          const pendentes = Object.entries(motivoCounts).filter(([, count]) => count >= 1);
+          if (pendentes.length === 0) return null;
           return (
             <AnimatePresence>
-              {reincidentes.map(([motivo, count]) => (
-                <motion.button
-                  key={motivo}
-                  onClick={() => setResolvingMotivo(motivo)}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: [1, 0.7, 1], y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white rounded-2xl p-4 flex items-start gap-4 shadow-lg text-left transition-colors mb-4 group ring-4 ring-transparent hover:ring-red-300"
-                >
-                  <div className="p-2 bg-white/20 rounded-xl shrink-0 group-hover:bg-white/30 transition-colors">
-                    <Siren className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="font-black text-sm uppercase tracking-wider mb-1 shadow-sm">
-                      ⚠ ALERTA DE REINCIDÊNCIA
-                    </p>
-                    <p className="text-sm font-bold opacity-90 leading-snug">
-                      "{motivo}" não resolvido reincidiu {count}× neste turno. <br/>
-                      <span className="font-black text-white underline decoration-red-300 mt-1 inline-block">Clique aqui para duplo-check de resolução</span>
-                    </p>
-                  </div>
-                </motion.button>
-              ))}
+              {pendentes.map(([motivo, count]) => {
+                const isReincidente = count >= 3;
+                const bannerBg = isReincidente ? "bg-red-600 hover:bg-red-700" : "bg-orange-500 hover:bg-orange-600";
+                const bannerRing = isReincidente ? "hover:ring-red-300" : "hover:ring-orange-300";
+
+                return (
+                  <motion.button
+                    key={motivo}
+                    onClick={() => setResolvingMotivo(motivo)}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: [1, 0.7, 1], y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className={`w-full ${bannerBg} text-white rounded-2xl p-4 flex items-start gap-4 shadow-lg text-left transition-colors mb-4 group ring-4 ring-transparent ${bannerRing}`}
+                  >
+                    <div className="p-2 bg-white/20 rounded-xl shrink-0 group-hover:bg-white/30 transition-colors">
+                      <Siren className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-black text-sm uppercase tracking-wider mb-1 shadow-sm">
+                        {isReincidente ? "⚠ ALERTA DE REINCIDÊNCIA" : "⚠ NÃO CONFORMIDADE"}
+                      </p>
+                      <p className="text-sm font-bold opacity-90 leading-snug">
+                        {isReincidente 
+                          ? `"${motivo}" não resolvido reincidiu ${count}× neste turno.` 
+                          : `"${motivo}" registrado e pendente de validação.`
+                        } <br/>
+                        <span className="font-black text-white underline decoration-white/40 mt-1 inline-block">Clique aqui para duplo-check de resolução</span>
+                      </p>
+                    </div>
+                  </motion.button>
+                );
+              })}
             </AnimatePresence>
           );
         })()}
