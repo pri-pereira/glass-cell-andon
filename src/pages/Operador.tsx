@@ -10,6 +10,7 @@ import { getCardColorClasses } from "@/utils/colorMap";
 import { getTerminalId, saveActiveChamadoId } from "@/utils/terminalId";
 import ConfirmacaoFAB from "@/components/ConfirmacaoFAB";
 import MaterialNaoConformeModal from "@/components/MaterialNaoConformeModal";
+import ConfirmacaoNC from "@/components/ConfirmacaoNC";
 
 type Step = "tacto" | "peca" | "success";
 type Lado = "LE" | "LD" | null;
@@ -359,6 +360,9 @@ const Operador = () => {
         tactoInicial={tacto}
         ladoInicial={lado}
       />
+
+      {/* ── Duplo Check de Material Não Conforme resolvido pela logística ── */}
+      <ConfirmacaoNC />
     </div>
   );
 };

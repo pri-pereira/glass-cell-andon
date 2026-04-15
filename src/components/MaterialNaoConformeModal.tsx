@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import NumericKeypad from "@/components/NumericKeypad";
+import { getTerminalId } from "@/utils/terminalId";
 
 export type MotivoNC =
   | "Erro de Posicionamento (Rack)"
@@ -102,6 +103,7 @@ const MaterialNaoConformeModal = ({
         status: "aguardando_inspecao",
         tipo_acao: isDivergencia ? "reversa" : null,
         created_at: now,
+        terminal_id: getTerminalId(),
       },
     ];
 
@@ -114,6 +116,7 @@ const MaterialNaoConformeModal = ({
         status: "aguardando_inspecao",
         tipo_acao: "urgente",
         created_at: now,
+        terminal_id: getTerminalId(),
       });
     }
 

@@ -61,7 +61,7 @@ const ConfirmacaoFAB = () => {
         setLoading(true);
         const { error } = await supabase
             .from("chamados")
-            .update({ status: "divergencia" })
+            .update({ status: "divergencia", teve_divergencia: true })
             .eq("id", selected.id);
 
         if (error) {

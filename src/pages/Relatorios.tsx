@@ -19,6 +19,7 @@ interface Chamado {
   entregue_at: string | null;
   confirmado_at: string | null;
   status: string;
+  teve_divergencia?: boolean;
 }
 
 interface NaoConformidade {
@@ -73,7 +74,7 @@ const Relatorios = () => {
       const [chamadosRes, naoConformidadesRes] = await Promise.all([
         supabase
           .from("chamados")
-          .select("id, tacto, created_at, entregue_at, confirmado_at, status")
+          .select("id, tacto, created_at, entregue_at, confirmado_at, status, teve_divergencia")
           .gte("created_at", `${dateFrom}T00:00:00`)
           .lte("created_at", `${dateTo}T23:59:59`)
           .order("created_at", { ascending: true })
@@ -187,7 +188,7 @@ const Relatorios = () => {
   const avgClose = avg(closeTimes);
   const avgLeadTime = avg(leadTimes);
 
-  const divergencias = chamados.filter((c) => c.status === "divergencia");
+  const divergencias = chamados.filter((c) => c.teve_divergencia === true);
 
   // Chart 1: Volume + Lead Time by hour
   const hourMap = new Map<string, { hour: string; requests: number; totalLead: number; validLead: number }>();
@@ -463,18 +464,34 @@ const Relatorios = () => {
                   <p className="font-bold">Nenhuma divergência registrada!</p>
                 </div>
               ) : (
-                divergencias.map((div, idx) => (
-                  <div key={div.id || idx} className="bg-red-50/50 border border-red-100 p-4 rounded-2xl flex items-center justify-between gap-4">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-red-400 uppercase tracking-widest">TACTO {div.tacto}</span>
-                      <span className="text-red-900 font-black text-sm">{format(parseISO(div.created_at), "dd/MM/yyyy HH:mm:ss")}</span>
+                divergencias.map((div, idx) => {
+                  const leadDivergencia = getDiff(div.created_at, div.confirmado_at);
+                  const showResolvido = div.status === "concluido" && leadDivergencia !== null;
+                  
+                  return (
+                    <div key={div.id || idx} className="bg-red-50/50 border border-red-100 p-4 rounded-2xl flex items-center justify-between gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-red-400 uppercase tracking-widest">TACTO {div.tacto}</span>
+                        <span className="text-red-900 font-black text-sm">{format(parseISO(div.created_at), "dd/MM/yyyy HH:mm")}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-red-400 uppercase font-bold block mb-0.5">
+                          {showResolvido ? "Tempo Perdido" : "Status Atual"}
+                        </span>
+                        {showResolvido ? (
+                          <span className="text-red-700 text-sm font-black flex items-center gap-1 justify-end">
+                            <Clock className="h-4 w-4" />
+                            {fmt(leadDivergencia)}
+                          </span>
+                        ) : (
+                          <span className="bg-red-200 text-red-800 text-xs font-black px-2 py-0.5 rounded-md uppercase">
+                            DIVERGÊNCIA ATIVA
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-red-400 uppercase font-bold block">Status</span>
-                      <span className="bg-red-200 text-red-800 text-xs font-black px-2 py-0.5 rounded-md">DIVERGÊNCIA</span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </motion.div>

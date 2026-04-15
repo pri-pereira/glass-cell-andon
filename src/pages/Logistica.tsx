@@ -84,7 +84,7 @@ const Logistica = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Fetch active chamados only (pendente or entregue/aguardando_confirmacao)
+  // Fetch active chamados only (pendente or entregue/aguardando_confirmacao or divergencia)
   const fetchActiveChamados = async () => {
     // For logistics dashboard, we only care about today's active tickets or tickets that haven't been completed
     const startOfDay = `${format(new Date(), "yyyy-MM-dd")}T00:00:00`;
@@ -92,7 +92,7 @@ const Logistica = () => {
       .from("chamados")
       .select("*")
       .gte("created_at", startOfDay)
-      .in("status", ["pendente", "entregue_no_posto", "aguardando_confirmacao"])
+      .in("status", ["pendente", "entregue_no_posto", "aguardando_confirmacao", "divergencia"])
       .order("created_at", { ascending: true }); // We will sort manually by urgency anyway
 
     if (data) setChamados(data as Chamado[]);
@@ -163,7 +163,7 @@ const Logistica = () => {
     const oitoHorasAtras = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
     const { data } = await supabase
       .from("nao_conformidades")
-      .select("id, motivo, tacto, lado, created_at, resolved_at")
+      .select("id, motivo, tacto, lado, created_at, resolved_at, status")
       .gte("created_at", oitoHorasAtras)
       .order("created_at", { ascending: false });
     if (data) setNaoConformidades(data as NaoConformidade[]);
@@ -180,6 +180,11 @@ const Logistica = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "nao_conformidades" },
+        () => fetchNaoConformidadesTurno()
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "nao_conformidades" },
         () => fetchNaoConformidadesTurno()
       )
       .subscribe();
@@ -260,15 +265,15 @@ const Logistica = () => {
     if (idsToResolve.length > 0) {
       await supabase
         .from("nao_conformidades")
-        .update({ resolved_at: getSaoPauloTimestamp() })
+        .update({ status: "aguardando_confirmacao_operador" })
         .in("id", idsToResolve);
     }
     
     setResolvingMotivo(null);
     setIsResolving(false);
     toast({
-      title: "Resolvido",
-      description: "As reincidências foram validadas e removidas do alerta.",
+      title: "Enviado à Linha",
+      description: "Aguardando duplo-check do operador na célula.",
     });
   };
 
@@ -282,7 +287,7 @@ const Logistica = () => {
   }
 
   // Calculate stats
-  const pendentes = chamados.filter((c) => c.status === "pendente").length;
+  const pendentes = chamados.filter((c) => c.status === "pendente" || c.status === "divergencia").length;
   const aguardando = chamados.filter((c) => c.status === "entregue_no_posto" || c.status === "aguardando_confirmacao").length;
 
   // Enhance chamados with time data and urgency sorting
@@ -334,26 +339,38 @@ const Logistica = () => {
 
         {/* ── Banner de Reincidência ── */}
         {(() => {
-          // Agrupar por motivo e verificar se algum >= 3 ocorrências ativas (nulas) no turno
-          const motivoCounts: Record<string, number> = {};
+          // Agrupar por motivo 
+          const motivoData: Record<string, { count: number; aguardandoCount: number }> = {};
           naoConformidades.forEach(nc => {
             if (!nc.resolved_at) {
-              motivoCounts[nc.motivo] = (motivoCounts[nc.motivo] || 0) + 1;
+              if (!motivoData[nc.motivo]) motivoData[nc.motivo] = { count: 0, aguardandoCount: 0 };
+              motivoData[nc.motivo].count += 1;
+              if (nc.status === "aguardando_confirmacao_operador") {
+                motivoData[nc.motivo].aguardandoCount += 1;
+              }
             }
           });
-          const pendentes = Object.entries(motivoCounts).filter(([, count]) => count >= 1);
+          const pendentes = Object.entries(motivoData).filter(([, data]) => data.count >= 1);
           if (pendentes.length === 0) return null;
           return (
             <AnimatePresence>
-              {pendentes.map(([motivo, count]) => {
+              {pendentes.map(([motivo, data]) => {
+                const count = data.count;
                 const isReincidente = count >= 3;
-                const bannerBg = isReincidente ? "bg-red-600 hover:bg-red-700" : "bg-orange-500 hover:bg-orange-600";
-                const bannerRing = isReincidente ? "hover:ring-red-300" : "hover:ring-orange-300";
+                const isAguardando = data.aguardandoCount > 0 && data.aguardandoCount === data.count;
+
+                let bannerBg = isReincidente ? "bg-red-600 hover:bg-red-700" : "bg-orange-500 hover:bg-orange-600";
+                let bannerRing = isReincidente ? "hover:ring-red-300" : "hover:ring-orange-300";
+                
+                if (isAguardando) {
+                  bannerBg = "bg-yellow-500 opacity-90 cursor-default";
+                  bannerRing = "ring-transparent";
+                }
 
                 return (
                   <motion.button
                     key={motivo}
-                    onClick={() => setResolvingMotivo(motivo)}
+                    onClick={() => !isAguardando && setResolvingMotivo(motivo)}
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: [1, 0.7, 1], y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -365,14 +382,18 @@ const Logistica = () => {
                     </div>
                     <div>
                       <p className="font-black text-sm uppercase tracking-wider mb-1 shadow-sm">
-                        {isReincidente ? "⚠ ALERTA DE REINCIDÊNCIA" : "⚠ NÃO CONFORMIDADE"}
+                        {isAguardando ? "⏳ AGUARDANDO VALIDAÇÃO DO OPERADOR" : (isReincidente ? "⚠ ALERTA DE REINCIDÊNCIA" : "⚠ NÃO CONFORMIDADE")}
                       </p>
                       <p className="text-sm font-bold opacity-90 leading-snug">
-                        {isReincidente 
-                          ? `"${motivo}" não resolvido reincidiu ${count}× neste turno.` 
-                          : `"${motivo}" registrado e pendente de validação.`
+                        {isAguardando 
+                          ? `Esperando a confirmação do operador para o problema "${motivo}".` 
+                          : (isReincidente 
+                            ? `"${motivo}" não resolvido reincidiu ${count}× neste turno.` 
+                            : `"${motivo}" registrado e pendente de validação.`)
                         } <br/>
-                        <span className="font-black text-white underline decoration-white/40 mt-1 inline-block">Clique aqui para duplo-check de resolução</span>
+                        {!isAguardando && (
+                          <span className="font-black text-white underline decoration-white/40 mt-1 inline-block">Clique aqui para enviar para duplo-check</span>
+                        )}
                       </p>
                     </div>
                   </motion.button>
