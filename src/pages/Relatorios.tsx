@@ -98,12 +98,20 @@ const Relatorios = () => {
   // ── Clear Logistica screen (archive active chamados preserving data for reports) ──
   const handleClearLogistica = async () => {
     setClearing(true);
-    const { error } = await supabase
+    const { error: errorChamados } = await supabase
       .from("chamados")
       .update({ status: "arquivado" })
-      .in("status", ["pendente", "entregue", "aguardando_confirmacao"]);
-    if (error) {
-      toast({ title: "Erro ao limpar", description: error.message, variant: "destructive" });
+      .neq("status", "concluido")
+      .neq("status", "arquivado");
+
+    const { error: errorNC } = await supabase
+      .from("nao_conformidades")
+      .update({ status: "arquivado" })
+      .neq("status", "concluido")
+      .neq("status", "arquivado");
+    
+    if (errorChamados || errorNC) {
+      toast({ title: "Erro ao limpar", description: errorChamados?.message || errorNC?.message, variant: "destructive" });
     } else {
       toast({ title: "✅ Tela da Logística limpa!", description: "Os dados continuam salvos nos relatórios." });
     }
