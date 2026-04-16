@@ -38,7 +38,7 @@ const ConfirmacaoNC = () => {
             const { data } = await supabase
                 .from("nao_conformidades")
                 .select("id, motivo, tacto, lado")
-                .eq("status", "aguardando_confirmacao_operador")
+                .in("status", ["aguardando_confirmacao_operador", "resolucao_pendente_validacao"])
                 .eq("terminal_id", myTerminalId);
 
             if (active && data && data.length > 0) {
@@ -58,14 +58,14 @@ const ConfirmacaoNC = () => {
                     const record = payload.new as any;
                     if (record.terminal_id !== myTerminalId) return;
 
-                    if (record.status === "aguardando_confirmacao_operador") {
+                    if (record.status === "aguardando_confirmacao_operador" || record.status === "resolucao_pendente_validacao") {
                         setPendingNCs((prev) => {
                             if (prev.find((nc) => nc.id === record.id)) return prev;
                             return [...prev, record as PendingNC];
                         });
                     }
 
-                    if (record.status === "resolvido") {
+                    if (record.status === "resolvido" || record.status === "concluido" || record.status === "aberto_reincidente") {
                         setPendingNCs((prev) => prev.filter((nc) => nc.id !== record.id));
                     }
                 }
@@ -88,13 +88,29 @@ const ConfirmacaoNC = () => {
         
         const { error } = await supabase
             .from("nao_conformidades")
-            .update({ status: "resolvido", resolved_at: now })
+            .update({ status: "concluido", resolved_at: now })
             .eq("id", first.id);
 
         if (error) {
             toast({ title: "Erro ao confirmar", description: error.message, variant: "destructive" });
         } else {
             toast({ title: "✅ Resolução validada!", description: `Problema de ${first.motivo} resolvido.` });
+            setPendingNCs((prev) => prev.filter((nc) => nc.id !== first.id));
+        }
+        setLoading(false);
+    };
+
+    const handleReject = async () => {
+        setLoading(true);
+        const { error } = await supabase
+            .from("nao_conformidades")
+            .update({ status: "aberto_reincidente" })
+            .eq("id", first.id);
+
+        if (error) {
+            toast({ title: "Erro ao rejeitar", description: error.message, variant: "destructive" });
+        } else {
+            toast({ title: "Rejeitado", description: `Problema de ${first.motivo} não foi resolvido. A logística foi notificada.` });
             setPendingNCs((prev) => prev.filter((nc) => nc.id !== first.id));
         }
         setLoading(false);
@@ -126,7 +142,8 @@ const ConfirmacaoNC = () => {
                         <div>
                             <p className="text-yellow-900/60 text-xs font-bold uppercase tracking-widest">Duplo-Check de Logística</p>
                             <h2 className="text-xl font-black text-yellow-950 leading-tight">
-                                A Logística diz ter resolvido o problema.
+                                A Logística sinalizou a resolução. <br/>
+                                O problema de {first.motivo} foi sanado?
                             </h2>
                         </div>
                     </div>
@@ -135,7 +152,7 @@ const ConfirmacaoNC = () => {
                     <div className="px-6 py-5 flex flex-col gap-4">
                         <div className="bg-red-50 rounded-2xl p-4 flex flex-col gap-2 border border-red-100">
                             <div className="flex justify-between items-center">
-                                <span className="text-xs font-bold text-red-400 uppercase tracking-wider">Aviso</span>
+                                <span className="text-xs font-bold text-red-400 uppercase tracking-wider">Lembrete</span>
                                 <span className="text-xs font-bold bg-white text-red-600 px-2 py-0.5 rounded-full shadow-sm">
                                     TACTO {first.tacto} · {first.lado}
                                 </span>
@@ -155,7 +172,14 @@ const ConfirmacaoNC = () => {
                                 className="w-full h-14 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-black text-lg rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                             >
                                 <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-                                {loading ? "Confirmando..." : "Sim, Validar Resolução"}
+                                {loading ? "Confirmando..." : "SIM - Problema Sanado"}
+                            </button>
+                            <button
+                                onClick={handleReject}
+                                disabled={loading}
+                                className="w-full h-14 bg-red-100 hover:bg-red-200 active:scale-95 text-red-700 font-bold text-lg rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                            >
+                                NÃO - Problema Persiste
                             </button>
                         </div>
                     </div>

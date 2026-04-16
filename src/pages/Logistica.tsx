@@ -265,7 +265,7 @@ const Logistica = () => {
     if (idsToResolve.length > 0) {
       await supabase
         .from("nao_conformidades")
-        .update({ status: "aguardando_confirmacao_operador" })
+        .update({ status: "resolucao_pendente_validacao" })
         .in("id", idsToResolve);
     }
     
@@ -340,13 +340,16 @@ const Logistica = () => {
         {/* ── Banner de Reincidência ── */}
         {(() => {
           // Agrupar por motivo 
-          const motivoData: Record<string, { count: number; aguardandoCount: number }> = {};
+          const motivoData: Record<string, { count: number; aguardandoCount: number; isAbertaReincidente: boolean }> = {};
           naoConformidades.forEach(nc => {
             if (!nc.resolved_at) {
-              if (!motivoData[nc.motivo]) motivoData[nc.motivo] = { count: 0, aguardandoCount: 0 };
+              if (!motivoData[nc.motivo]) motivoData[nc.motivo] = { count: 0, aguardandoCount: 0, isAbertaReincidente: false };
               motivoData[nc.motivo].count += 1;
-              if (nc.status === "aguardando_confirmacao_operador") {
+              if (nc.status === "aguardando_confirmacao_operador" || nc.status === "resolucao_pendente_validacao") {
                 motivoData[nc.motivo].aguardandoCount += 1;
+              }
+              if (nc.status === "aberto_reincidente") {
+                motivoData[nc.motivo].isAbertaReincidente = true;
               }
             }
           });
@@ -356,11 +359,11 @@ const Logistica = () => {
             <AnimatePresence>
               {pendentes.map(([motivo, data]) => {
                 const count = data.count;
-                const isReincidente = count >= 3;
+                const isReincidente = count >= 3 || data.isAbertaReincidente;
                 const isAguardando = data.aguardandoCount > 0 && data.aguardandoCount === data.count;
 
-                let bannerBg = isReincidente ? "bg-red-600 hover:bg-red-700" : "bg-orange-500 hover:bg-orange-600";
-                let bannerRing = isReincidente ? "hover:ring-red-300" : "hover:ring-orange-300";
+                let bannerBg = isReincidente ? "bg-red-600 hover:bg-red-700 animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.6)]" : "bg-orange-500 hover:bg-orange-600";
+                let bannerRing = isReincidente ? "ring-red-400 ring-2" : "hover:ring-orange-300";
                 
                 if (isAguardando) {
                   bannerBg = "bg-yellow-500 opacity-90 cursor-default";
@@ -372,10 +375,10 @@ const Logistica = () => {
                     key={motivo}
                     onClick={() => !isAguardando && setResolvingMotivo(motivo)}
                     initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: [1, 0.7, 1], y: 0 }}
+                    animate={isReincidente && !isAguardando ? { opacity: [1, 0.8, 1], scale: [1, 1.01, 1], y: 0 } : { opacity: [1, 0.7, 1], y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className={`w-full ${bannerBg} text-white rounded-2xl p-4 flex items-start gap-4 shadow-lg text-left transition-colors mb-4 group ring-4 ring-transparent ${bannerRing}`}
+                    transition={{ duration: isReincidente ? 1 : 3, repeat: Infinity, ease: "easeInOut" }}
+                    className={`w-full ${bannerBg} text-white rounded-2xl p-4 flex items-start gap-4 shadow-lg text-left transition-all mb-4 group ring-4 ring-transparent ${bannerRing}`}
                   >
                     <div className="p-2 bg-white/20 rounded-xl shrink-0 group-hover:bg-white/30 transition-colors">
                       <Siren className="h-6 w-6" />
@@ -388,11 +391,11 @@ const Logistica = () => {
                         {isAguardando 
                           ? `Esperando a confirmação do operador para o problema "${motivo}".` 
                           : (isReincidente 
-                            ? `"${motivo}" não resolvido reincidiu ${count}× neste turno.` 
+                            ? `"${motivo}" ${data.isAbertaReincidente ? "foi rejeitado na validação e persiste." : "já reincidiu " + count + "× neste turno!"}` 
                             : `"${motivo}" registrado e pendente de validação.`)
                         } <br/>
                         {!isAguardando && (
-                          <span className="font-black text-white underline decoration-white/40 mt-1 inline-block">Clique aqui para enviar para duplo-check</span>
+                          <span className="font-black text-white underline decoration-white/40 mt-1 inline-block">Clique aqui para enviar para duplo-check novamente</span>
                         )}
                       </p>
                     </div>
