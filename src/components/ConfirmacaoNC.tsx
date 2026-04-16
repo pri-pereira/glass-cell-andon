@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, CheckCircle2, Siren } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { getTerminalId } from "@/utils/terminalId";
 
@@ -35,14 +36,40 @@ const ConfirmacaoNC = () => {
         const myTerminalId = getTerminalId();
 
         const fetchExisting = async () => {
-            const { data } = await supabase
+            const myTerminalId = getTerminalId();
+            let results: PendingNC[] = [];
+
+            // ── Estratégia 1: terminal_id do dispositivo ─────────────────────
+            console.log("[ConfirmacaoNC] Buscando NCs para o terminal:", myTerminalId);
+            const { data: terminalData } = await supabase
                 .from("nao_conformidades")
                 .select("id, motivo, tacto, lado")
                 .in("status", ["aguardando_confirmacao_operador", "resolucao_pendente_validacao"])
                 .eq("terminal_id", myTerminalId);
 
-            if (active && data && data.length > 0) {
-                setPendingNCs(data);
+            if (terminalData && terminalData.length > 0) {
+                console.log("[ConfirmacaoNC] ✅ NCs encontradas por terminal_id:", terminalData.length);
+                results = terminalData as PendingNC[];
+            }
+
+            // ── Estratégia 2: fallback amplo (últimas 8 horas, qualquer terminal_id) ────
+            if (results.length === 0) {
+                const eightHoursAgo = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+                console.log("[ConfirmacaoNC] Estratégia fallback — desde:", eightHoursAgo);
+                const { data: fallbackData } = await supabase
+                    .from("nao_conformidades")
+                    .select("id, motivo, tacto, lado")
+                    .in("status", ["aguardando_confirmacao_operador", "resolucao_pendente_validacao"])
+                    .gte("created_at", eightHoursAgo);
+
+                if (fallbackData && fallbackData.length > 0) {
+                    console.log("[ConfirmacaoNC] ✅ NCs encontradas por fallback:", fallbackData.length);
+                    results = fallbackData as PendingNC[];
+                }
+            }
+
+            if (active && results.length > 0) {
+                setPendingNCs(results);
             }
         };
 
@@ -56,17 +83,11 @@ const ConfirmacaoNC = () => {
                 { event: "UPDATE", schema: "public", table: "nao_conformidades" },
                 (payload) => {
                     const record = payload.new as any;
-                    if (record.terminal_id !== myTerminalId) return;
-
-                    if (record.status === "aguardando_confirmacao_operador" || record.status === "resolucao_pendente_validacao") {
-                        setPendingNCs((prev) => {
-                            if (prev.find((nc) => nc.id === record.id)) return prev;
-                            return [...prev, record as PendingNC];
-                        });
-                    }
-
-                    if (record.status === "resolvido" || record.status === "concluido" || record.status === "aberto_reincidente") {
-                        setPendingNCs((prev) => prev.filter((nc) => nc.id !== record.id));
+                    const isRelevantStatus = ["aguardando_confirmacao_operador", "resolucao_pendente_validacao", "resolvido", "concluido", "aberto_reincidente"].includes(record.status);
+                    
+                    if (isRelevantStatus) {
+                        console.log("[ConfirmacaoNC] Realtime — status relevante detectado, re-sincronizando...");
+                        fetchExisting();
                     }
                 }
             )

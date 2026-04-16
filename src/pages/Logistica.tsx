@@ -33,6 +33,8 @@ interface NaoConformidade {
   lado: string;
   created_at: string;
   resolved_at: string | null;
+  status: string;
+  terminal_id?: string;
 }
 
 const Logistica = () => {
@@ -162,12 +164,16 @@ const Logistica = () => {
   // Buscar não conformidades do turno (últimas 8h)
   const fetchNaoConformidadesTurno = async () => {
     const oitoHorasAtras = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+    console.log("[Logistica] Buscando NCs desde:", oitoHorasAtras);
     const { data } = await supabase
       .from("nao_conformidades")
-      .select("id, motivo, tacto, lado, created_at, resolved_at, status")
+      .select("id, motivo, tacto, lado, created_at, resolved_at, status, terminal_id")
       .gte("created_at", oitoHorasAtras)
       .order("created_at", { ascending: false });
-    if (data) setNaoConformidades(data as NaoConformidade[]);
+    if (data) {
+        console.log("[Logistica] NCs recebidas:", data.length);
+        setNaoConformidades(data as NaoConformidade[]);
+    }
   };
 
   useEffect(() => {
@@ -259,15 +265,26 @@ const Logistica = () => {
 
   const handleResolveReincidencia = async (motivo: string) => {
     setIsResolving(true);
+    console.log("[Logistica] Iniciando resolução de:", motivo);
     const idsToResolve = naoConformidades
       .filter(nc => nc.motivo === motivo && !nc.resolved_at)
       .map(nc => nc.id);
 
+    console.log("[Logistica] IDs para atualizar:", idsToResolve);
+
     if (idsToResolve.length > 0) {
-      await supabase
+      const { error } = await supabase
         .from("nao_conformidades")
         .update({ status: "resolucao_pendente_validacao" })
         .in("id", idsToResolve);
+
+      if (error) {
+        console.error("[Logistica] Erro ao atualizar status:", error);
+        toast({ title: "Erro na atualização", description: error.message, variant: "destructive" });
+      } else {
+        console.log("[Logistica] Status atualizado com sucesso. Recarregando...");
+        await fetchNaoConformidadesTurno();
+      }
     }
     
     setResolvingMotivo(null);
@@ -288,8 +305,13 @@ const Logistica = () => {
   }
 
   // Calculate stats
-  const pendentes = chamados.filter((c) => c.status === "pendente" || c.status === "divergencia" || c.status === "em_atendimento").length;
-  const aguardando = chamados.filter((c) => c.status === "entregue_no_posto" || c.status === "aguardando_confirmacao" || c.status === "aguardando_validacao_operador" || c.status === "resolucao_pendente_validacao" || c.status === "resolucao_pendente").length;
+  const pendentesChamados = chamados.filter((c) => c.status === "pendente" || c.status === "divergencia" || c.status === "em_atendimento").length;
+  const pendentesNCs = naoConformidades.filter((nc) => !nc.resolved_at && (nc.status === "aguardando_inspecao" || nc.status === "aberto_reincidente" || !nc.status)).length;
+  const pendentes = pendentesChamados + pendentesNCs;
+  
+  const aguardandoChamados = chamados.filter((c) => c.status === "entregue_no_posto" || c.status === "aguardando_confirmacao" || c.status === "aguardando_validacao_operador").length;
+  const aguardandoNCs = naoConformidades.filter((nc) => !nc.resolved_at && (nc.status === "aguardando_confirmacao_operador" || nc.status === "resolucao_pendente_validacao")).length;
+  const aguardando = aguardandoChamados + aguardandoNCs;
 
   // Enhance chamados with time data and urgency sorting
   const MAX_TIME_S = 600; // 10 minutes
@@ -354,11 +376,11 @@ const Logistica = () => {
               }
             }
           });
-          const pendentes = Object.entries(motivoData).filter(([, data]) => data.count >= 1);
-          if (pendentes.length === 0) return null;
+          const pendentesArr = Object.entries(motivoData).filter(([, data]) => data.count >= 1);
+          if (pendentesArr.length === 0) return null;
           return (
             <AnimatePresence>
-              {pendentes.map(([motivo, data]) => {
+              {pendentesArr.map(([motivo, data]) => {
                 const count = data.count;
                 const isReincidente = count >= 3 || data.isAbertaReincidente;
                 const isAguardando = data.aguardandoCount > 0 && data.aguardandoCount === data.count;
@@ -456,22 +478,6 @@ const Logistica = () => {
             </div>
           </div>
         </div>
-
-        {/* Notificação Push Prompt Row - Desabilitado temporariamente */}
-        {/* !notificationsEnabled && (
-          <div className="w-full bg-blue-50 border border-blue-100 p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 -mt-2">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-full"><Package className="h-5 w-5 text-blue-600" /></div>
-              <div>
-                <h3 className="font-bold text-blue-900 text-sm md:text-base">Habilitar Notificações em Tempo Real</h3>
-                <p className="text-blue-700 text-xs md:text-sm">Receba alertas de peças instantaneamente, mesmo com o app minimizado.</p>
-              </div>
-            </div>
-            <Button onClick={handleEnableNotifications} className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-10 w-full md:w-auto">
-              Ativar Alertas
-            </Button>
-          </div>
-        )*/}
 
         {/* Priority Vertical List */}
         <div className="flex-1 w-full flex flex-col gap-4 mt-2 mb-12">
